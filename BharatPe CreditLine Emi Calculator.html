@@ -1,0 +1,361 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>BharatPe Credit Line EMI Calculator</title>
+    <!-- Using Tailwind CSS for modern styling -->
+    <script src="https://cdn.tailwindcss.com"></script>
+  </head>
+  <body class="bg-slate-50 text-slate-800 p-4 md:p-8 font-sans">
+    <div
+      class="max-w-5xl mx-auto bg-white rounded-2xl shadow-xl overflow-hidden"
+    >
+      <!-- Header -->
+      <div class="bg-blue-700 text-white p-6">
+        <h2 class="text-2xl font-bold">BharatPe Credit Line EMI Calculator</h2>
+        <p class="text-blue-100 mt-1">
+          Expose the real cost of your loan, including GST and maintenance fees.
+        </p>
+      </div>
+
+      <div class="p-6 md:p-8">
+        <!-- Inputs -->
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-6 mb-8">
+          <div class="flex flex-col">
+            <label class="font-semibold text-sm text-slate-600 mb-2"
+              >Principal Amount (₹)</label
+            >
+            <input
+              type="number"
+              id="principal"
+              value="6238"
+              class="px-4 py-2 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-shadow"
+            />
+          </div>
+          <div class="flex flex-col">
+            <label class="font-semibold text-sm text-slate-600 mb-2"
+              >Monthly Interest Rate (%)</label
+            >
+            <input
+              type="number"
+              id="rate"
+              step="0.1"
+              value="2.5"
+              class="px-4 py-2 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-shadow"
+            />
+          </div>
+          <div class="flex flex-col">
+            <label class="font-semibold text-sm text-slate-600 mb-2"
+              >Tenure (Months)</label
+            >
+            <input
+              type="number"
+              id="months"
+              value="12"
+              class="px-4 py-2 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-shadow"
+            />
+          </div>
+          <div class="flex flex-col">
+            <label class="font-semibold text-sm text-slate-600 mb-2"
+              >Line Maintenance Fee (₹)</label
+            >
+            <input
+              type="number"
+              id="maintFee"
+              value="29"
+              class="px-4 py-2 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-shadow"
+            />
+          </div>
+          <div class="flex flex-col">
+            <label class="font-semibold text-sm text-slate-600 mb-2"
+              >GST Rate (%)</label
+            >
+            <input
+              type="number"
+              id="gst"
+              value="18"
+              disabled
+              class="px-4 py-2 border border-slate-200 bg-slate-100 rounded-lg text-slate-500 cursor-not-allowed"
+            />
+          </div>
+        </div>
+
+        <button
+          onclick="calculateEMI()"
+          class="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 px-4 rounded-xl shadow-md transition-colors duration-200 mb-8"
+        >
+          Calculate True Cost
+        </button>
+
+        <!-- Summary Blocks -->
+        <div
+          id="summaryBlock"
+          class="hidden grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-8"
+        >
+          <div
+            class="bg-blue-50 border border-blue-100 rounded-xl p-5 text-center"
+          >
+            <p
+              class="text-sm text-blue-600 font-semibold uppercase tracking-wider"
+            >
+              Total Extra Paid
+            </p>
+            <p class="text-3xl font-bold text-blue-900 mt-2">
+              ₹<span id="sumExtra">0</span>
+            </p>
+            <p class="text-xs text-blue-500 mt-1">Interest + All Fees + GST</p>
+          </div>
+          <div
+            class="bg-emerald-50 border border-emerald-100 rounded-xl p-5 text-center"
+          >
+            <p
+              class="text-sm text-emerald-600 font-semibold uppercase tracking-wider"
+            >
+              Total Amount Paid
+            </p>
+            <p class="text-3xl font-bold text-emerald-900 mt-2">
+              ₹<span id="sumTotal">0</span>
+            </p>
+            <p class="text-xs text-emerald-500 mt-1">Principal + Total Extra</p>
+          </div>
+          <div
+            class="bg-rose-50 border border-rose-100 rounded-xl p-5 text-center"
+          >
+            <p
+              class="text-sm text-rose-600 font-semibold uppercase tracking-wider"
+            >
+              True Flat Rate
+            </p>
+            <p class="text-3xl font-bold text-rose-900 mt-2">
+              <span id="sumFlat">0</span>%
+            </p>
+            <p class="text-xs text-rose-500 mt-1">
+              Your actual cost percentage
+            </p>
+          </div>
+          <div
+            class="bg-purple-50 border border-purple-100 rounded-xl p-5 text-center"
+          >
+            <p
+              class="text-sm text-purple-600 font-semibold uppercase tracking-wider"
+            >
+              Average EMI
+            </p>
+            <p class="text-3xl font-bold text-purple-900 mt-2">
+              ₹<span id="avgEmi">0</span>
+            </p>
+            <p class="text-xs text-purple-500 mt-1">Total Paid ÷ Months</p>
+          </div>
+        </div>
+
+        <!-- Detailed Table -->
+        <div
+          id="tableContainer"
+          class="hidden overflow-x-auto rounded-xl border border-slate-200"
+        >
+          <table class="w-full text-sm text-left">
+            <thead
+              class="text-xs text-slate-600 uppercase bg-slate-100 border-b border-slate-200"
+            >
+              <tr>
+                <th
+                  rowspan="2"
+                  scope="col"
+                  class="px-4 py-4 font-semibold text-center align-middle border-r border-slate-200"
+                >
+                  Month
+                </th>
+                <th
+                  rowspan="2"
+                  scope="col"
+                  class="px-4 py-4 font-semibold text-right align-middle border-r border-slate-200"
+                >
+                  Principal Bal.
+                </th>
+                <th
+                  colspan="3"
+                  scope="colgroup"
+                  class="px-4 py-2 font-semibold text-center border-b border-r border-slate-200 bg-slate-200/50"
+                >
+                  Base EMI
+                </th>
+                <th
+                  colspan="2"
+                  scope="colgroup"
+                  class="px-4 py-2 font-semibold text-center border-b border-r border-slate-200 bg-orange-50/50"
+                >
+                  Charges
+                </th>
+                <th
+                  rowspan="2"
+                  scope="col"
+                  class="px-4 py-4 font-semibold text-right align-middle"
+                >
+                  True Bill Paid
+                </th>
+              </tr>
+              <tr>
+                <th
+                  scope="col"
+                  class="px-4 py-2 font-semibold text-right text-emerald-600"
+                >
+                  Principal
+                </th>
+                <th
+                  scope="col"
+                  class="px-4 py-2 font-semibold text-right text-rose-600"
+                >
+                  Interest
+                </th>
+                <th
+                  scope="col"
+                  class="px-4 py-2 font-semibold text-right border-r border-slate-200"
+                >
+                  Total EMI
+                </th>
+                <th
+                  scope="col"
+                  class="px-4 py-2 font-semibold text-right text-rose-600"
+                >
+                  18% GST (Int)
+                </th>
+                <th
+                  id="maintHeader"
+                  scope="col"
+                  class="px-4 py-2 font-semibold text-right text-orange-600 border-r border-slate-200"
+                >
+                  Maint + GST
+                </th>
+              </tr>
+            </thead>
+            <tbody id="tableBody" class="divide-y divide-slate-200">
+              <!-- Rows injected via JS -->
+            </tbody>
+            <tfoot
+              id="tableFoot"
+              class="bg-slate-100 font-bold text-slate-800 border-t-2 border-slate-300"
+            >
+              <!-- Totals injected via JS -->
+            </tfoot>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <script>
+      // Run calculation once on load to show initial data
+      window.onload = function () {
+        calculateEMI();
+      };
+
+      function calculateEMI() {
+        const P = parseFloat(document.getElementById("principal").value);
+        const r_monthly =
+          parseFloat(document.getElementById("rate").value) / 100;
+        const n = parseInt(document.getElementById("months").value);
+        const maintFeeBase = parseFloat(
+          document.getElementById("maintFee").value,
+        );
+        const gstRate = 0.18; // 18% GST
+
+        // Standard EMI Formula: P * r * (1+r)^n / ((1+r)^n - 1)
+        const emi =
+          (P * r_monthly * Math.pow(1 + r_monthly, n)) /
+          (Math.pow(1 + r_monthly, n) - 1);
+
+        let remainingPrincipal = P;
+        let totalInterest = 0;
+        let totalGSTOnInterest = 0;
+        const maintGSTAmount = maintFeeBase * gstRate;
+        const maintWithGST = maintFeeBase + maintGSTAmount;
+        let totalMaintPaid = 0;
+
+        // Update header to explicitly show the breakdown
+        document.getElementById("maintHeader").innerText =
+          `Maint (₹${maintFeeBase} + GST ₹${maintGSTAmount.toFixed(2)})`;
+
+        const tbody = document.getElementById("tableBody");
+        tbody.innerHTML = "";
+
+        for (let i = 1; i <= n; i++) {
+          let interestForMonth = remainingPrincipal * r_monthly;
+          let principalForMonth = emi - interestForMonth;
+
+          // Handle rounding errors on the final month to zero out the balance perfectly
+          if (i === n) {
+            principalForMonth = remainingPrincipal;
+            interestForMonth = emi - principalForMonth;
+          }
+
+          let gstOnInt = interestForMonth * gstRate;
+          let totalBill = emi + gstOnInt + maintWithGST;
+
+          totalInterest += interestForMonth;
+          totalGSTOnInterest += gstOnInt;
+          totalMaintPaid += maintWithGST;
+
+          // Alternate row background colors for readability
+          const rowClass = i % 2 === 0 ? "bg-slate-50" : "bg-white";
+
+          // Build Table Row
+          const tr = document.createElement("tr");
+          tr.className = `${rowClass} hover:bg-blue-50 transition-colors`;
+          tr.innerHTML = `
+                    <td class="px-4 py-3 text-center font-medium text-slate-900 border-r border-slate-100">${i}</td>
+                    <td class="px-4 py-3 text-right text-slate-600 border-r border-slate-100">₹${remainingPrincipal.toFixed(2)}</td>
+                    <td class="px-4 py-3 text-right text-emerald-600 font-medium">₹${principalForMonth.toFixed(2)}</td>
+                    <td class="px-4 py-3 text-right text-rose-600 font-medium">₹${interestForMonth.toFixed(2)}</td>
+                    <td class="px-4 py-3 text-right text-slate-600 border-r border-slate-100 bg-slate-50/30">₹${emi.toFixed(2)}</td>
+                    <td class="px-4 py-3 text-right text-rose-600">₹${gstOnInt.toFixed(2)}</td>
+                    <td class="px-4 py-3 text-right text-orange-600 border-r border-slate-100 bg-orange-50/10">₹${maintWithGST.toFixed(2)}</td>
+                    <td class="px-4 py-3 text-right text-blue-700 font-bold bg-blue-50/50">₹${totalBill.toFixed(2)}</td>
+                `;
+          tbody.appendChild(tr);
+
+          remainingPrincipal -= principalForMonth;
+        }
+
+        // Calculate Totals
+        const totalExtra = totalInterest + totalGSTOnInterest + totalMaintPaid;
+        const grandTotal = P + totalExtra;
+        const flatRate = (totalExtra / P) * 100;
+        const avgEmi = grandTotal / n;
+        const totalBaseEMI = P + totalInterest;
+
+        // Inject Totals Row into Footer
+        const tfoot = document.getElementById("tableFoot");
+        tfoot.innerHTML = `
+                <tr>
+                    <td class="px-4 py-4 text-center uppercase tracking-wider border-r border-slate-300">Total</td>
+                    <td class="px-4 py-4 text-right border-r border-slate-300">-</td>
+                    <td class="px-4 py-4 text-right text-emerald-700">₹${P.toFixed(2).replace(/\B(?=(\d{3})+(?!\d))/g, ",")}</td>
+                    <td class="px-4 py-4 text-right text-rose-700">₹${totalInterest.toFixed(2).replace(/\B(?=(\d{3})+(?!\d))/g, ",")}</td>
+                    <td class="px-4 py-4 text-right border-r border-slate-300 bg-slate-200/30">₹${totalBaseEMI.toFixed(2).replace(/\B(?=(\d{3})+(?!\d))/g, ",")}</td>
+                    <td class="px-4 py-4 text-right text-rose-700">₹${totalGSTOnInterest.toFixed(2).replace(/\B(?=(\d{3})+(?!\d))/g, ",")}</td>
+                    <td class="px-4 py-4 text-right text-orange-700 border-r border-slate-300 bg-orange-100/30">₹${totalMaintPaid.toFixed(2).replace(/\B(?=(\d{3})+(?!\d))/g, ",")}</td>
+                    <td class="px-4 py-4 text-right text-blue-900 bg-blue-100/50">₹${grandTotal.toFixed(2).replace(/\B(?=(\d{3})+(?!\d))/g, ",")}</td>
+                </tr>
+            `;
+
+        // Update UI Counters
+        // Add commas for better readability on larger numbers
+        document.getElementById("sumExtra").innerText = totalExtra
+          .toFixed(2)
+          .replace(/\B(?=(\d{3})+(?!\d))/g, ",");
+        document.getElementById("sumTotal").innerText = grandTotal
+          .toFixed(2)
+          .replace(/\B(?=(\d{3})+(?!\d))/g, ",");
+        document.getElementById("sumFlat").innerText = flatRate.toFixed(2);
+        document.getElementById("avgEmi").innerText = avgEmi
+          .toFixed(2)
+          .replace(/\B(?=(\d{3})+(?!\d))/g, ",");
+
+        // Show the hidden elements
+        document.getElementById("summaryBlock").classList.remove("hidden");
+        document.getElementById("summaryBlock").classList.add("grid");
+        document.getElementById("tableContainer").classList.remove("hidden");
+      }
+    </script>
+  </body>
+</html>
